@@ -1,0 +1,382 @@
+<style>
+  /* Buttons */
+  #yt-mini-player .btn {
+    all: unset;
+    cursor: pointer;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    user-select: none;
+    flex: 0 0 auto;
+  }
+
+  #yt-mini-player .btn:active {
+    transform: scale(0.97);
+  }
+
+  #yt-mini-player .btn:hover {
+    background: rgba(255, 255, 255, 0.085);
+  }
+
+  #yt-mini-player .titleLogo {
+    height: 18px;
+    display: flex;
+  }
+
+  #yt-mini-player .titleLogo svg {
+    height: 18px;
+    display: inline-block;
+    padding-right: 8px;
+  }
+
+  #yt-mini-player .btnPrimary {
+    background: rgba(34, 197, 94, 0.18);
+    border-color: rgba(34, 197, 94, 0.35);
+    padding: 8px 12px;
+  }
+
+  #yt-mini-player .btnPrimary:hover {
+    background: rgba(34, 197, 94, 0.24);
+    border-color: rgba(34, 197, 94, 0.45);
+  }
+
+  #yt-mini-player .btnToggled {
+    background: rgba(34, 197, 94, 0.18);
+    border-color: rgba(34, 197, 94, 0.45);
+  }
+
+  #yt-mini-player .icon {
+    width: 18px;
+    height: 18px;
+    display: block;
+    fill: rgba(255, 255, 255, 0.88);
+  }
+
+  /* Cover + rotation */
+  #yt-mini-player .cover {
+    width: 56px;
+    height: 56px;
+    border-radius: 28px;
+    background: #222 center/cover no-repeat;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+      /* 썸네일 레터박스 잘라내기(줌) */
+    background-size: 140% 140%; /* 필요하면 130~170%로 조절 */
+    background-position: center;
+    flex: 0 0 auto;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #yt-mini-player .cover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.16), transparent 55%);
+    pointer-events: none;
+  }
+
+  #yt-mini-player .spinning {
+    animation: ytMiniSpin 3.2s linear infinite;
+    transform-origin: 50% 50%;
+    border-radius: 28px;
+  }
+
+  @keyframes ytMiniSpin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Layout stability fixes (no wrap / no push) */
+  #yt-mini-player .topBar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    flex-wrap: nowrap; /* ✅ prevent wrapping */
+  }
+
+  #yt-mini-player .meta {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-left: 8px;
+    flex: 1 1 auto; /* ✅ take remaining space only */
+  }
+
+  /* Title + marquee */
+  #yt-mini-player .titleRow {
+    font-size: 16px;
+    font-weight: 650;
+    opacity: 0.95;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #yt-mini-player .marqueeWrap {
+    position: relative;
+    height: 18px;
+    overflow: hidden;
+    opacity: 0.72;
+    font-size: 16px;
+    line-height: 18px;
+    white-space: nowrap;
+  }
+
+  #yt-mini-player .marquee {
+    display: inline-block;
+    padding-left: 100%;
+    animation: ytMiniMarquee 8s linear infinite;
+    will-change: transform;
+  }
+
+  #yt-mini-player .marquee.paused {
+    animation-play-state: paused;
+  }
+
+  @keyframes ytMiniMarquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+
+  #yt-mini-player .openLink {
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    transition: background 120ms ease;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  #yt-mini-player .openLink:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+</style>
+
+<div
+  id="yt-mini-player"
+  style="
+    margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #141414, #0b0b0b);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    color: rgba(255, 255, 255, 0.92);
+  "
+>
+  <div class="topBar">
+    <div id="cover" class="cover"></div>
+
+    <div class="meta">
+      <div class="titleRow">
+        <span class="titleLogo" aria-hidden="true">
+          <svg viewBox="0 0 736 247" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path
+              d="M635.087 132.486L661.517 65.6074H704.767L633.309 246.444H590.059L613.654 186.738L563.977 65.6074H607.659L635.087 132.486ZM61.5703 65.6064C87.1939 65.435 113.851 78.6777 113.851 78.6777L101.987 107.563C70.9617 91.4057 50.6654 95.1901 48.7305 102.542C46.8111 109.841 60.4709 115.135 82.377 119.438C102.434 123.374 118.32 139.73 117.806 160.369C117.287 181.004 96.4807 201.3 59.3301 201.3C22.1866 201.3 0 184.788 0 184.788L15.8184 154.18C58.9083 173.611 72.8372 164.995 73.7842 159.336C74.9172 152.581 65.4216 150.202 52.627 147.98C40.3949 145.863 5.33113 141.277 5.33105 109.118C5.33105 76.9592 35.9431 65.778 61.5703 65.6064ZM196.875 65.6064C228.929 65.6067 255.697 89.3066 261.558 120.578C262.337 124.75 262.762 129.049 262.762 133.455C262.762 137.854 262.337 142.156 261.558 146.328H168.291C173.018 158.15 184.05 166.46 196.875 166.46C204.599 166.46 211.656 163.425 217.092 158.44L253.375 168.238C241.855 188.016 220.858 201.3 196.875 201.3C160.548 201.3 130.99 170.863 130.99 133.455C130.99 96.0431 160.548 65.6064 196.875 65.6064ZM358.68 65.6074C394.939 65.6077 394.939 100.555 394.939 115.105V201.297H355.279V123.643C355.279 105.118 348.214 100.446 335.628 101.997C323.042 103.548 315.59 110.762 315.59 119.464V201.297H275.934V65.7373H315.59V79.9189C315.668 79.8301 328.156 65.6074 358.68 65.6074ZM549.699 201.297H507.567V190.434C495.041 198.147 482.19 201.297 466.391 201.297C432.073 201.297 408.906 170.894 408.906 133.393C408.906 95.8875 432.073 65.4805 466.391 65.4805C482.19 65.4806 496.603 71.938 507.567 82.5518V0H549.699V201.297ZM712.886 153.316C725.558 153.316 735.828 163.588 735.828 176.26C735.828 188.928 725.558 199.198 712.886 199.198C700.218 199.198 689.946 188.928 689.946 176.26C689.946 163.588 700.218 153.316 712.886 153.316ZM480.117 100.446C463.199 97.6949 448.965 111.825 448.965 133.393C448.965 154.952 463.113 168.493 480.117 166.334C497.296 164.153 506.848 154.687 506.848 136.494C506.848 113.246 493.251 102.583 480.117 100.446ZM196.874 100.445C184.05 100.446 173.018 108.756 168.291 120.577H225.462C220.731 108.755 209.699 100.445 196.874 100.445Z"
+              fill="currentColor"
+            />
+          </svg>
+          🎧 403호 Playlist 💿
+        </span>
+      </div>
+
+      <div class="marqueeWrap">
+        <div id="marquee" class="marquee paused">로딩 중…</div>
+      </div>
+    </div>
+
+    <!-- ✅ fixed right controls (no wrap, no shrink) -->
+    <div
+      style="
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 0 0 auto;
+        white-space: nowrap;
+      "
+    >
+      <button id="prev" class="btn" title="Previous" aria-label="Previous">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 6h2v12H7V6zm3.5 6 10 6V6l-10 6z"></path>
+        </svg>
+      </button>
+
+      <button id="play" class="btn btnPrimary" title="Play/Pause" aria-label="Play/Pause">
+        <svg id="playIcon" class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 5v14l11-7L8 5z"></path>
+        </svg>
+        <svg id="pauseIcon" class="icon" viewBox="0 0 24 24" aria-hidden="true" style="display: none">
+          <path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z"></path>
+        </svg>
+      </button>
+
+      <button id="next" class="btn" title="Next" aria-label="Next">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 6h2v12h-2V6zM4 18V6l10 6-10 6z"></path>
+        </svg>
+      </button>
+
+      <button id="shuffle" class="btn" title="Shuffle" aria-label="Shuffle">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M16 3h5v5h-2V6.41l-3.59 3.59-1.41-1.41L17.59 5H16V3zM3 7h5.59l3 3-1.41 1.41L7.59 9H3V7zm18 10v5h-5v-2h1.59l-3.59-3.59 1.41-1.41L19 17.59V17h2zM3 15h4.59l8.41-8.41L17.41 8 9 16.41H3V15z"
+          />
+        </svg>
+      </button>
+
+      <a
+        id="open"
+        class="openLink"
+        target="_blank"
+        rel="noreferrer"
+        href="https://www.youtube.com/playlist?list=PLXlkn8FnIWZxi4SyYU0nCelOWwZGaZ3Yk"
+      >
+        열기 ↗
+      </a>
+    </div>
+  </div>
+
+  <!-- Hidden actual player (audio-like) -->
+  <div style="height: 0; overflow: hidden">
+    <div id="player"></div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const PLAYLIST_ID = "PLXlkn8FnIWZxi4SyYU0nCelOWwZGaZ3Yk";
+
+    const coverEl = document.getElementById("cover");
+    const marqueeEl = document.getElementById("marquee");
+    const openEl = document.getElementById("open");
+
+    const playBtn = document.getElementById("play");
+    const prevBtn = document.getElementById("prev");
+    const nextBtn = document.getElementById("next");
+    const shuffleBtn = document.getElementById("shuffle");
+
+    const playIcon = document.getElementById("playIcon");
+    const pauseIcon = document.getElementById("pauseIcon");
+
+    // Load YouTube IFrame API once
+    if (!window.__ytApiLoading) {
+      window.__ytApiLoading = true;
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(tag);
+    }
+
+    function setNowText(text) {
+      marqueeEl.textContent = text || "";
+
+      // Pause marquee by default; only animate if long enough
+      marqueeEl.classList.add("paused");
+
+      // Force a restart so it doesn't "jump" weirdly
+      void marqueeEl.offsetWidth;
+
+      if ((marqueeEl.textContent || "").length > 18) {
+        marqueeEl.classList.remove("paused");
+      }
+    }
+
+    function setPlayingUI(isPlaying) {
+      if (isPlaying) {
+        playIcon.style.display = "none";
+        pauseIcon.style.display = "block";
+        coverEl.classList.add("spinning");
+      } else {
+        playIcon.style.display = "block";
+        pauseIcon.style.display = "none";
+        coverEl.classList.remove("spinning");
+      }
+    }
+
+    const waitForYT = setInterval(() => {
+      if (window.YT && window.YT.Player) {
+        clearInterval(waitForYT);
+
+        const player = new YT.Player("player", {
+          height: "1",
+          width: "1",
+          playerVars: {
+            listType: "playlist",
+            list: PLAYLIST_ID,
+            autoplay: 0,
+            controls: 0,
+            modestbranding: 1,
+            rel: 0,
+            playsinline: 1,
+          },
+          events: {
+            onReady: () => {
+              setTimeout(updateMeta, 800);
+            },
+            onStateChange: (e) => {
+              if (e.data === YT.PlayerState.PLAYING) setPlayingUI(true);
+              if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) setPlayingUI(false);
+
+              if (e.data === YT.PlayerState.PLAYING || e.data === YT.PlayerState.PAUSED) {
+                updateMeta();
+              }
+            },
+          },
+        });
+
+        function updateMeta() {
+          try {
+            const data = player.getVideoData && player.getVideoData();
+            const title = data && data.title ? data.title : "재생 중";
+            setNowText(title);
+
+            const vid = data && data.video_id ? data.video_id : null;
+            if (vid) {
+              const url = `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`;
+              coverEl.style.backgroundImage = `url('${url}')`;
+              openEl.href = `https://www.youtube.com/watch?v=${vid}&list=${PLAYLIST_ID}`;
+            }
+          } catch (_) {}
+        }
+
+        playBtn.addEventListener("click", () => {
+          const state = player.getPlayerState();
+          if (state === YT.PlayerState.PLAYING) player.pauseVideo();
+          else player.playVideo();
+        });
+
+        nextBtn.addEventListener("click", () => player.nextVideo());
+        prevBtn.addEventListener("click", () => player.previousVideo());
+
+        let isShuffled = false;
+
+        function setShuffleUI(on) {
+          isShuffled = !!on;
+          shuffleBtn.classList.toggle("btnToggled", isShuffled);
+        }
+
+        // 버튼 클릭 시 셔플 토글
+        shuffleBtn.addEventListener("click", () => {
+          setShuffleUI(!isShuffled);
+          player.setShuffle(isShuffled); // ✅ true면 셔플, false면 원래 순서로  [oai_citation:1‡Google for Developers](https://developers.google.com/youtube/iframe_api_reference)
+        });
+      }
+    }, 200);
+
+    setPlayingUI(false);
+  })();
+</script>
